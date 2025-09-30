@@ -1,11 +1,9 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+const config = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
-
-    // Or if using `src` directory:
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
@@ -20,3 +18,5 @@ export default {
   },
   plugins: [(await import("@tailwindcss/forms")).default],
 };
+
+export default config;

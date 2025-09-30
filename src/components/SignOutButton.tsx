@@ -5,10 +5,11 @@ import { signOut } from "next-auth/react";
 import toast from "react-hot-toast";
 import { Loader2, LogOut } from "lucide-react";
 
-interface SignOutButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {}
+// Use type alias directly, no need for an empty interface
+type SignOutButtonProps = ButtonHTMLAttributes<HTMLButtonElement>;
 
 const SignOutButton: FC<SignOutButtonProps> = ({ ...props }) => {
-  const [isSigningOut, setIsSigningOut] = useState<boolean>();
+  const [isSigningOut, setIsSigningOut] = useState<boolean>(false); // initialize as false
   return (
     <Button
       {...props}
@@ -17,7 +18,7 @@ const SignOutButton: FC<SignOutButtonProps> = ({ ...props }) => {
         setIsSigningOut(true);
         try {
           await signOut();
-        } catch (error) {
+        } catch {
           toast.error("Error signing out, please try again.");
         } finally {
           setIsSigningOut(false);

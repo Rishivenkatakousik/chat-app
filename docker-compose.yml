@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+  next-chat-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: next-chat-app
+    image: chat-app:latest
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./.env.local
+    environment:
+      NODE_ENV: production

@@ -1,0 +1,34 @@
+# Dependency directories
+node_modules
+npm-debug.log
+yarn-error.log
+.pnpm-store
+
+# Local env files (exclude all by default, but allow .env.local for build-time vars)
+.env*
+!.env.local
+
+# Build output
+.next/cache
+out
+build
+
+# Git metadata
+.git
+.gitignore
+
+# IDE/editor
+.vscode
+*.swp
+*.swo
+
+# OS files
+*.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Docker
+Dockerfile*
+docker-compose*.yml

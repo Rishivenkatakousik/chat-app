@@ -1,5 +1,5 @@
 "use client";
-import { FC, useRef, useState } from "react";
+import { FC, useRef, useState, useEffect } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import Button from "./ui/Button";
 import axios from "axios";
@@ -14,19 +14,32 @@ const ChatInput: FC<ChatInputProps> = ({ chatPartner, chatId }) => {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [input, setInput] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const timeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
+    };
+  }, []);
 
   const sendMessage = async () => {
     if (!input) return;
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise<void>((resolve) => {
+        timeoutIdRef.current = setTimeout(resolve, 1000);
+      });
+      if (!isMountedRef.current) return;
       await axios.post("/api/message/send", { text: input, chatId });
+      if (!isMountedRef.current) return;
       setInput("");
       textareaRef.current?.focus();
     } catch {
-      toast.error("Something went wrong. Please try again.");
+      if (isMountedRef.current) toast.error("Something went wrong. Please try again.");
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) setIsLoading(false);
     }
   };
   return (

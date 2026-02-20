@@ -4,7 +4,7 @@ npm-debug.log
 yarn-error.log
 .pnpm-store
 
-# Local env files (exclude all by default, but allow .env.local for build-time vars)
+# Local env files – don't bake secrets; use ARG/ENV at build and runtime
 .env*
 !.env.local
 
@@ -12,6 +12,20 @@ yarn-error.log
 .next/cache
 out
 build
+
+# Tests and coverage (not needed in image)
+**/__tests__
+**/*.test.*
+**/*.spec.*
+coverage
+
+# Docs and misc (reduces build context)
+docs
+.storybook
+.cursor
+.github
+*.md
+!README.md
 
 # Git metadata
 .git

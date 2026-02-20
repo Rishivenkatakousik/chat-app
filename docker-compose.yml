@@ -12,3 +12,4 @@ services:
       - ./.env.local
     environment:
       NODE_ENV: production
+    restart: unless-stopped

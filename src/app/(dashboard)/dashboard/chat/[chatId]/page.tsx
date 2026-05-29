@@ -8,9 +8,9 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 
 interface pageProps {
-  params: {
+  params: Promise<{
     chatId: string;
-  };
+  }>;
 }
 
 async function getChatMessages(chatId: string) {

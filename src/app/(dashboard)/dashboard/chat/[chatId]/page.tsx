@@ -21,9 +21,7 @@ async function getChatMessages(chatId: string) {
     );
 
     const dbMessages = result.map((message) => JSON.parse(message) as Message);
-    const reversedDbMessages = dbMessages.reverse();
-
-    const messages = messageArrayValidator.parse(reversedDbMessages);
+    const messages = messageArrayValidator.parse(dbMessages.reverse());
     return messages;
   } catch {
     notFound();
@@ -39,13 +37,14 @@ const page = async ({ params }: pageProps) => {
   const [userId1, userId2] = chatId.split("--");
   if (user.id !== userId1 && user.id !== userId2) notFound();
 
-  const chatPartnerId = user.id == userId1 ? userId2 : userId1;
-  const chatPartnerRaw = (await fetchRedis(
-    "get",
-    `user:${chatPartnerId}`
-  )) as string;
+  const chatPartnerId = user.id === userId1 ? userId2 : userId1;
+
+  const [initialMessages, chatPartnerRaw] = await Promise.all([
+    getChatMessages(chatId),
+    fetchRedis("get", `user:${chatPartnerId}`) as Promise<string>,
+  ]);
+
   const chatPartner = JSON.parse(chatPartnerRaw) as User;
-  const initialMessages = await getChatMessages(chatId);
 
   return (
     <ChatLayout

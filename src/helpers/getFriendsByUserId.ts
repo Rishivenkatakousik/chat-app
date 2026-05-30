@@ -1,6 +1,7 @@
+import { cache } from "react";
 import { fetchRedis } from "./redis";
 
-export const getFriendsByUserId = async (userId: string) => {
+export const getFriendsByUserId = cache(async (userId: string): Promise<User[]> => {
   const friendIds = (await fetchRedis(
     "smembers",
     `user:${userId}:friends`
@@ -12,5 +13,6 @@ export const getFriendsByUserId = async (userId: string) => {
       return JSON.parse(friend) as User;
     })
   );
+
   return friends;
-};
+});

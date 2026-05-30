@@ -1,9 +1,9 @@
 "use client";
-import { pusherClient } from "@/lib/pusher";
 import { toPusherKey } from "@/lib/utils";
+import { usePusherEvent } from "@/lib/hooks/usePusherEvent";
 import { User } from "lucide-react";
 import Link from "next/link";
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 
 interface FriendRequestsSidebarOptionsProps {
   sessionId: string;
@@ -18,34 +18,18 @@ const FriendRequestsSidebarOptions: FC<FriendRequestsSidebarOptionsProps> = ({
     initialUnseenRequestCount
   );
 
-  useEffect(() => {
-    const requestsChannel = pusherClient.subscribe(
-      toPusherKey(`user:${sessionId}:incoming_friend_requests`)
-    );
-    const friendsChannel = pusherClient.subscribe(
-      toPusherKey(`user:${sessionId}:friends`)
-    );
+  usePusherEvent(
+    toPusherKey(`user:${sessionId}:incoming_friend_requests`),
+    "incoming_friend_requests",
+    () => setUnseenRequestCount((prev) => prev + 1)
+  );
 
-    const friendRequestHandler = () => {
-      setUnseenRequestCount((prev) => prev + 1);
-    };
+  usePusherEvent(
+    toPusherKey(`user:${sessionId}:friends`),
+    "new_friend",
+    () => setUnseenRequestCount((prev) => prev - 1)
+  );
 
-    const addedFriendHandler = () => {
-      setUnseenRequestCount((prev) => prev - 1);
-    };
-
-    requestsChannel.bind("incoming_friend_requests", friendRequestHandler);
-    friendsChannel.bind("new_friend", addedFriendHandler);
-
-    return () => {
-      requestsChannel.unbind("incoming_friend_requests", friendRequestHandler);
-      friendsChannel.unbind("new_friend", addedFriendHandler);
-      pusherClient.unsubscribe(
-        toPusherKey(`user:${sessionId}:incoming_friend_requests`)
-      );
-      pusherClient.unsubscribe(toPusherKey(`user:${sessionId}:friends`));
-    };
-  }, [sessionId]);
   return (
     <Link
       href="/dashboard/requests"

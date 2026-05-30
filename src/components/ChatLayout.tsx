@@ -1,8 +1,8 @@
 "use client";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useState } from "react";
 import Image from "next/image";
-import { pusherClient } from "@/lib/pusher";
 import { toPusherKey } from "@/lib/utils";
+import { usePusherEvent } from "@/lib/hooks/usePusherEvent";
 import { Message } from "@/lib/validations/message";
 import Messages from "./Messages";
 import ChatInput from "./ChatInput";
@@ -35,14 +35,11 @@ const ChatLayout: FC<ChatLayoutProps> = ({
     setMessages((prev) => prev.filter((m) => m.id !== messageId));
   }, []);
 
-  useEffect(() => {
-    const channel = pusherClient.subscribe(toPusherKey(`chat:${chatId}`));
-    channel.bind("incoming-message", addMessage);
-    return () => {
-      channel.unbind("incoming-message", addMessage);
-      pusherClient.unsubscribe(toPusherKey(`chat:${chatId}`));
-    };
-  }, [chatId, addMessage]);
+  usePusherEvent<Message>(
+    toPusherKey(`chat:${chatId}`),
+    "incoming-message",
+    addMessage
+  );
 
   return (
     <div className="flex-1 justify-between flex flex-col h-full max-h-[calc(100vh-6rem)]">

@@ -23,8 +23,8 @@ const SidebarChatList: FC<SidebarChatListProps> = ({ friends, sessionId }) => {
   const [activeChats, setActiveChats] = useState<User[]>(friends);
 
   useEffect(() => {
-    pusherClient.subscribe(toPusherKey(`user:${sessionId}:chats`));
-    pusherClient.subscribe(toPusherKey(`user:${sessionId}:friends`));
+    const chatsChannel = pusherClient.subscribe(toPusherKey(`user:${sessionId}:chats`));
+    const friendsChannel = pusherClient.subscribe(toPusherKey(`user:${sessionId}:friends`));
 
     const chatHandler = (message: ExtendedMessage) => {
       const shouldNotify =
@@ -51,15 +51,14 @@ const SidebarChatList: FC<SidebarChatListProps> = ({ friends, sessionId }) => {
       setActiveChats((prev) => [...prev, newFriend]);
     };
 
-    pusherClient.bind("new_message", chatHandler);
-    pusherClient.bind("new_friend", newFriendHandler);
+    chatsChannel.bind("new_message", chatHandler);
+    friendsChannel.bind("new_friend", newFriendHandler);
 
     return () => {
+      chatsChannel.unbind("new_message", chatHandler);
+      friendsChannel.unbind("new_friend", newFriendHandler);
       pusherClient.unsubscribe(toPusherKey(`user:${sessionId}:chats`));
       pusherClient.unsubscribe(toPusherKey(`user:${sessionId}:friends`));
-
-      pusherClient.unbind("new_message", chatHandler);
-      pusherClient.unbind("new_friend", newFriendHandler);
     };
   }, [pathName, router, sessionId]);
 

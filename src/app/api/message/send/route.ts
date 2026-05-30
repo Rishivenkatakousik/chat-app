@@ -9,7 +9,11 @@ import { toPusherKey } from "@/lib/utils";
 
 export async function POST(req: Request) {
   try {
-    const { text, chatId }: { text: string; chatId: string } = await req.json();
+    const { text, chatId, messageId: clientMessageId }: {
+      text: string;
+      chatId: string;
+      messageId?: string;
+    } = await req.json();
     const session = await getServerSession(authOptions);
 
     const [userId1, userId2] = chatId.split("--");
@@ -35,7 +39,7 @@ export async function POST(req: Request) {
 
     const timestamp = Date.now();
     const messageData: Message = {
-      id: nanoid(),
+      id: clientMessageId ?? nanoid(),
       senderId: session.user.id,
       text,
       timestamp,

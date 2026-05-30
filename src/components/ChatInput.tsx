@@ -1,47 +1,62 @@
 "use client";
-import { FC, useRef, useState, useEffect } from "react";
+import { FC, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import Button from "./ui/Button";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { nanoid } from "nanoid";
+import { Message } from "@/lib/validations/message";
 
 interface ChatInputProps {
   chatPartner: User;
   chatId: string;
+  sessionId: string;
+  onMessageSent: (msg: Message) => void;
+  onMessageRollback: (messageId: string) => void;
 }
 
-const ChatInput: FC<ChatInputProps> = ({ chatPartner, chatId }) => {
+const ChatInput: FC<ChatInputProps> = ({
+  chatPartner,
+  chatId,
+  sessionId,
+  onMessageSent,
+  onMessageRollback,
+}) => {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [input, setInput] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const timeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isMountedRef = useRef(true);
-
-  useEffect(() => {
-    return () => {
-      isMountedRef.current = false;
-      if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
-    };
-  }, []);
 
   const sendMessage = async () => {
-    if (!input) return;
+    if (!input || isLoading) return;
     setIsLoading(true);
+
+    const messageId = nanoid();
+    const optimisticMsg: Message = {
+      id: messageId,
+      senderId: sessionId,
+      text: input,
+      timestamp: Date.now(),
+    };
+
+    onMessageSent(optimisticMsg);
+    setInput("");
+    textareaRef.current?.focus();
+
     try {
-      await new Promise<void>((resolve) => {
-        timeoutIdRef.current = setTimeout(resolve, 1000);
+      await axios.post("/api/message/send", {
+        text: optimisticMsg.text,
+        chatId,
+        messageId,
       });
-      if (!isMountedRef.current) return;
-      await axios.post("/api/message/send", { text: input, chatId });
-      if (!isMountedRef.current) return;
-      setInput("");
-      textareaRef.current?.focus();
     } catch {
-      if (isMountedRef.current) toast.error("Something went wrong. Please try again.");
+      onMessageRollback(messageId);
+      setInput(optimisticMsg.text);
+      toast.error("Something went wrong. Please try again.");
     } finally {
-      if (isMountedRef.current) setIsLoading(false);
+      setIsLoading(false);
     }
   };
+
   return (
     <div className="border-t border-gray-200 px-4 pt-4 mb-2 sm:mb-0">
       <div className="relative flex overflow-hidden rounded-lg shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-indigo-600">

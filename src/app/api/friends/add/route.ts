@@ -57,14 +57,15 @@ export async function POST(req: Request) {
       return new Response("Already Friends with this user", { status: 400 });
     }
 
-    pusherServer.trigger(
-      toPusherKey(`user:${idToAdd}:incoming_friend_requests`),
-      "incoming_friend_requests",
-      { senderId: session.user.id, senderEmail: session.user.email }
-    );
+    await Promise.all([
+      pusherServer.trigger(
+        toPusherKey(`user:${idToAdd}:incoming_friend_requests`),
+        "incoming_friend_requests",
+        { senderId: session.user.id, senderEmail: session.user.email }
+      ),
+      db.sadd(`user:${idToAdd}:incoming_friend_requests`, session.user.id),
+    ]);
 
-    db.sadd(`user:${idToAdd}:incoming_friend_requests`, session.user.id);
-    // console.log(data);
     return new Response("OK");
   } catch (error) {
     if (error instanceof z.ZodError) {

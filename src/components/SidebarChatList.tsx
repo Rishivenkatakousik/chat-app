@@ -24,7 +24,7 @@ const SidebarChatList: FC<SidebarChatListProps> = ({ friends, sessionId }) => {
 
   useEffect(() => {
     pusherClient.subscribe(toPusherKey(`user:${sessionId}:chats`));
-    pusherClient.subscribe(toPusherKey(`user:${sessionId}:friend`));
+    pusherClient.subscribe(toPusherKey(`user:${sessionId}:friends`));
 
     const chatHandler = (message: ExtendedMessage) => {
       const shouldNotify =
@@ -56,7 +56,7 @@ const SidebarChatList: FC<SidebarChatListProps> = ({ friends, sessionId }) => {
 
     return () => {
       pusherClient.unsubscribe(toPusherKey(`user:${sessionId}:chats`));
-      pusherClient.unsubscribe(toPusherKey(`user:${sessionId}:friend`));
+      pusherClient.unsubscribe(toPusherKey(`user:${sessionId}:friends`));
 
       pusherClient.unbind("new_message", chatHandler);
       pusherClient.unbind("new_friend", newFriendHandler);
